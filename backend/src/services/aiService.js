@@ -1,3 +1,6 @@
+import OpenAI from "openai";
+import { env } from "../config/env.js";
+
 const subjectQuestionBanks = {
   dbms: [
     "What is normalization and why is it important?",
@@ -21,7 +24,47 @@ const subjectQuestionBanks = {
   ]
 };
 
-export const generateVivaPack = ({ subject = "dbms", level = "intermediate" }) => {
+const hasOpenRouter = Boolean(env.openrouterApiKey);
+
+const openRouterClient = hasOpenRouter
+  ? new OpenAI({
+      baseURL: "https://openrouter.ai/api/v1",
+      apiKey: env.openrouterApiKey
+    })
+  : null;
+
+const safeJsonParse = (value) => {
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+};
+
+const callOpenRouter = async (prompt) => {
+  if (!openRouterClient) {
+    throw new Error("OPENROUTER_API_KEY is not configured.");
+  }
+
+  const completion = await openRouterClient.chat.completions.create({
+    model: env.openrouterModel,
+    messages: [
+      {
+        role: "system",
+        content:
+          "You are an educational AI assistant for a student SaaS app. Return precise, concise, production-safe content."
+      },
+      {
+        role: "user",
+        content: prompt
+      }
+    ]
+  });
+
+  return completion.choices[0]?.message?.content?.trim() || "";
+};
+
+const buildFallbackVivaPack = ({ subject = "dbms", level = "intermediate" }) => {
   const bank = subjectQuestionBanks[subject] || subjectQuestionBanks.dbms;
   return bank.map((question, index) => ({
     id: `${subject}-${index + 1}`,
@@ -31,7 +74,7 @@ export const generateVivaPack = ({ subject = "dbms", level = "intermediate" }) =
   }));
 };
 
-export const generateRoadmap = ({ goal = "frontend roadmap for beginners", durationWeeks = 8 }) => {
+const buildFallbackRoadmap = ({ goal = "frontend roadmap for beginners", durationWeeks = 8 }) => {
   const weeks = Array.from({ length: durationWeeks }, (_, index) => index + 1);
   return {
     goal,
@@ -45,5 +88,96 @@ export const generateRoadmap = ({ goal = "frontend roadmap for beginners", durat
         "Review progress, blockers, and quiz weak areas"
       ]
     }))
+  };
+};
+
+export const generateVivaPack = async ({ subject = "dbms", level = "intermediate" }) => {
+  if (!hasOpenRouter) {
+    return buildFallbackVivaPack({ subject, level });
+  }
+
+  try {
+    const prompt = `
+Generate 5 ${subject.toUpperCase()} viva questions for ${level} level students.
+Return only valid JSON in this shape:
+{
+  "items": [
+    {
+      "id": "string",
+      "question": "string",
+      "answer": "string",
+      "difficulty": "${level}"
+    }
+  ]
+}
+Keep answers concise, exam-ready, and factually grounded.
+`;
+
+    const raw = await callOpenRouter(prompt);
+    const parsed = safeJsonParse(raw);
+
+    if (parsed?.items?.length) {
+      return parsed.items;
+    }
+  } catch (error) {
+    console.error("OpenRouter viva generation failed, using fallback.", error.message);
+  }
+
+  return buildFallbackVivaPack({ subject, level });
+};
+
+export const generateRoadmap = async ({ goal = "frontend roadmap for beginners", durationWeeks = 8 }) => {
+  if (!hasOpenRouter) {
+    return buildFallbackRoadmap({ goal, durationWeeks });
+  }
+
+  try {
+    const prompt = `
+Generate a ${durationWeeks}-week study roadmap for: "${goal}".
+Return only valid JSON in this shape:
+{
+  "goal": "string",
+  "durationWeeks": ${durationWeeks},
+  "milestones": [
+    {
+      "week": 1,
+      "focus": "string",
+      "tasks": ["string", "string", "string"]
+    }
+  ]
+}
+Make the roadmap realistic for students and keep each task actionable.
+`;
+
+    const raw = await callOpenRouter(prompt);
+    const parsed = safeJsonParse(raw);
+
+    if (parsed?.milestones?.length) {
+      return parsed;
+    }
+  } catch (error) {
+    console.error("OpenRouter roadmap generation failed, using fallback.", error.message);
+  }
+
+  return buildFallbackRoadmap({ goal, durationWeeks });
+};
+
+export const generateAIHealthSample = async () => {
+  if (!hasOpenRouter) {
+    return {
+      provider: "fallback",
+      model: "local-seed",
+      output: buildFallbackVivaPack({ subject: "dbms", level: "intermediate" }).slice(0, 2)
+    };
+  }
+
+  const output = await callOpenRouter(
+    'Generate exactly 2 DBMS viva questions with very short answers. Return plain text with numbered lines.'
+  );
+
+  return {
+    provider: "openrouter",
+    model: env.openrouterModel,
+    output
   };
 };

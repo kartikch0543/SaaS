@@ -16,7 +16,7 @@
 3. Start command: `npm start`
 4. Add variables from `backend/.env.example`.
 5. Set `FRONTEND_URL` to your Vercel domain.
-6. If you use both production and preview domains, set `FRONTEND_URL` as a comma-separated list, for example `https://studyforge-ai.vercel.app,https://studyforge-ai-git-main-yourname.vercel.app`.
+6. If you use both production and preview domains, set `FRONTEND_URL` as a comma-separated list, for example `https://studyforge.vercel.app,https://studyforge-ai-git-main-yourname.vercel.app`.
 
 ## Database
 

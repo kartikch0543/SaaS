@@ -28,7 +28,9 @@ export const env = {
   },
   googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || "",
   searchConsoleSiteUrl: process.env.SEARCH_CONSOLE_SITE_URL || "",
-  clarityProjectId: process.env.CLARITY_PROJECT_ID || ""
+  clarityProjectId: process.env.CLARITY_PROJECT_ID || "",
+  openrouterApiKey: process.env.OPENROUTER_API_KEY || "",
+  openrouterModel: process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat"
 };
 
 export const isProduction = env.nodeEnv === "production";
