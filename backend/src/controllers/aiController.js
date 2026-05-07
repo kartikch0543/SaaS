@@ -1,11 +1,19 @@
 import { generateAIHealthSample, generateRoadmap, generateVivaPack } from "../services/aiService.js";
+import { logger } from "../utils/logger.js";
 
 export const getVivaQuestions = async (req, res, next) => {
   try {
     const pack = await generateVivaPack(req.validatedBody);
     res.json(pack);
   } catch (error) {
-    next(error);
+    logger.error("Viva generation controller failed", {
+      requestId: req.requestId,
+      error: error.message
+    });
+    res.status(503).json({
+      success: false,
+      message: "AI service temporarily unavailable"
+    });
   }
 };
 
@@ -14,7 +22,14 @@ export const getRoadmap = async (req, res, next) => {
     const roadmap = await generateRoadmap(req.validatedBody);
     res.json(roadmap);
   } catch (error) {
-    next(error);
+    logger.error("Roadmap generation controller failed", {
+      requestId: req.requestId,
+      error: error.message
+    });
+    res.status(503).json({
+      success: false,
+      message: "AI service temporarily unavailable"
+    });
   }
 };
 

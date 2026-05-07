@@ -67,17 +67,25 @@ export const VivaPrepPage = () => {
         </div>
 
         {mutation.isPending ? (
-          <div className="mt-8 surface-card p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">Generating viva pack</p>
-            <p className="mt-3 text-sm leading-7 text-muted">
-              Building topic-specific questions, concise answers, follow-up prompts, and interview framing for your selected concept.
-            </p>
+          <div className="mt-8 grid gap-4">
+            <div className="surface-card animate-pulse p-6">
+              <div className="h-4 w-32 rounded-full bg-panel" />
+              <div className="mt-4 h-8 w-2/3 rounded-full bg-panel" />
+              <div className="mt-4 h-4 w-full rounded-full bg-panel" />
+              <div className="mt-2 h-4 w-5/6 rounded-full bg-panel" />
+            </div>
+            <div className="surface-card h-48 animate-pulse" />
           </div>
         ) : null}
 
         {mutation.isError ? (
           <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
             The viva request did not complete. Check your backend env, OpenRouter key, and deployment logs. After this patch, the backend should fall back quickly instead of hanging for a long time.
+            <div className="mt-4">
+              <Button variant="secondary" onClick={() => mutation.mutate()}>
+                Retry generation
+              </Button>
+            </div>
           </div>
         ) : null}
 

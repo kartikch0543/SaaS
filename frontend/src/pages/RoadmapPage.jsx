@@ -49,17 +49,25 @@ export const RoadmapPage = () => {
         </div>
 
         {mutation.isPending ? (
-          <div className="mt-8 surface-card p-6">
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">Generating roadmap</p>
-            <p className="mt-3 text-sm leading-7 text-muted">
-              Analyzing the topic, building a week-by-week progression, and preparing projects, resources, and interview prep.
-            </p>
+          <div className="mt-8 grid gap-4">
+            <div className="surface-card animate-pulse p-6">
+              <div className="h-4 w-32 rounded-full bg-panel" />
+              <div className="mt-4 h-8 w-2/3 rounded-full bg-panel" />
+              <div className="mt-4 h-4 w-full rounded-full bg-panel" />
+              <div className="mt-2 h-4 w-5/6 rounded-full bg-panel" />
+            </div>
+            <div className="surface-card h-48 animate-pulse" />
           </div>
         ) : null}
 
         {mutation.isError ? (
           <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
             The roadmap request did not complete. Check your backend env, OpenRouter key, and deployment logs. A fallback should return quickly after this patch, so repeated failure usually means the API itself is not reachable.
+            <div className="mt-4">
+              <Button variant="secondary" onClick={() => mutation.mutate()}>
+                Retry generation
+              </Button>
+            </div>
           </div>
         ) : null}
 

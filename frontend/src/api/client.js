@@ -8,7 +8,7 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json"
   },
-  timeout: 15000
+  timeout: 20000
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -18,5 +18,20 @@ apiClient.interceptors.request.use((config) => {
   }
   return config;
 });
+
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.code === "ECONNABORTED") {
+      error.message = "The request took too long and timed out.";
+    } else if (error.response?.data?.message) {
+      error.message = error.response.data.message;
+    } else if (!error.response) {
+      error.message = "The server could not be reached.";
+    }
+
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;

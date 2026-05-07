@@ -1,17 +1,13 @@
-import OpenAI from "openai";
+import { createHash } from "crypto";
+import mongoose from "mongoose";
 import { env } from "../config/env.js";
+import { AIGenerationCache } from "../models/AIGenerationCache.js";
 import { slugify } from "../utils/slugify.js";
+import { logger } from "../utils/logger.js";
 
 const hasOpenRouter = Boolean(env.openrouterApiKey);
-
-const openRouterClient = hasOpenRouter
-  ? new OpenAI({
-      baseURL: "https://openrouter.ai/api/v1",
-      apiKey: env.openrouterApiKey
-    })
-  : null;
-
-const AI_TIMEOUT_MS = 9000;
+const AI_TIMEOUT_MS = env.openrouterTimeoutMs;
+const AI_RETRY_COUNT = env.openrouterRetryCount;
 
 const roadmapBlueprints = {
   frontend: {
@@ -719,26 +715,134 @@ const safeJsonParse = (value) => {
   }
 };
 
-const callOpenRouter = async (systemPrompt, userPrompt) => {
-  if (!openRouterClient) {
+const hasDatabase = () => mongoose.connection.readyState === 1;
+
+const buildCacheKey = (type, input) =>
+  createHash("sha256")
+    .update(JSON.stringify({ type, input }))
+    .digest("hex");
+
+const getCachedGeneration = async (cacheKey) => {
+  if (!hasDatabase()) {
+    return null;
+  }
+
+  return AIGenerationCache.findOne({ cacheKey }).lean();
+};
+
+const saveCachedGeneration = async ({ cacheKey, type, input, response, provider, model, status, lastError = "" }) => {
+  if (!hasDatabase()) {
+    return;
+  }
+
+  await AIGenerationCache.findOneAndUpdate(
+    { cacheKey },
+    {
+      cacheKey,
+      type,
+      input,
+      response,
+      provider,
+      model,
+      status,
+      lastError
+    },
+    { new: true, upsert: true }
+  );
+};
+
+const fetchOpenRouterResponse = async ({ model, systemPrompt, userPrompt, requestId }) => {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), AI_TIMEOUT_MS);
+
+  logger.info("AI request start", {
+    requestId,
+    provider: "openrouter",
+    model,
+    timeoutMs: AI_TIMEOUT_MS
+  });
+
+  try {
+    const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.openrouterApiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        model,
+        temperature: 0.8,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: userPrompt }
+        ]
+      }),
+      signal: controller.signal
+    });
+
+    const payload = await response.json().catch(() => ({}));
+
+    if (!response.ok) {
+      throw new Error(payload?.error?.message || `OpenRouter request failed with status ${response.status}`);
+    }
+
+    const content = payload?.choices?.[0]?.message?.content?.trim() || "";
+
+    logger.info("AI request success", {
+      requestId,
+      provider: "openrouter",
+      model
+    });
+
+    return content;
+  } catch (error) {
+    logger.error("AI request failure", {
+      requestId,
+      provider: "openrouter",
+      model,
+      error: error.name === "AbortError" ? "Request timed out" : error.message
+    });
+    throw error.name === "AbortError" ? new Error("AI request timed out") : error;
+  } finally {
+    clearTimeout(timeout);
+  }
+};
+
+const callOpenRouter = async ({ systemPrompt, userPrompt, requestId }) => {
+  if (!hasOpenRouter) {
     throw new Error("OPENROUTER_API_KEY is not configured.");
   }
 
-  const completion = await Promise.race([
-    openRouterClient.chat.completions.create({
-      model: env.openrouterModel,
-      temperature: 0.8,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: userPrompt }
-      ]
-    }),
-    new Promise((_, reject) => {
-      setTimeout(() => reject(new Error(`AI request timed out after ${AI_TIMEOUT_MS}ms`)), AI_TIMEOUT_MS);
-    })
-  ]);
+  let lastError;
 
-  return completion.choices[0]?.message?.content?.trim() || "";
+  for (const model of env.openrouterModels) {
+    for (let attempt = 1; attempt <= AI_RETRY_COUNT + 1; attempt += 1) {
+      try {
+        const content = await fetchOpenRouterResponse({
+          model,
+          systemPrompt,
+          userPrompt,
+          requestId
+        });
+
+        return {
+          content,
+          model
+        };
+      } catch (error) {
+        lastError = error;
+        logger.warn("AI model attempt failed", {
+          requestId,
+          model,
+          attempt,
+          retryLimit: AI_RETRY_COUNT + 1,
+          error: error.message
+        });
+      }
+    }
+  }
+
+  throw lastError || new Error("All configured OpenRouter models failed.");
 };
 
 const buildRoadmapPrompt = ({ goal, durationWeeks, category }) => {
@@ -936,47 +1040,122 @@ const isValidVivaPack = (value) =>
 
 export const generateRoadmap = async ({ goal = "frontend roadmap for beginners", durationWeeks = 8 }) => {
   const category = analyzeRoadmapGoal(goal);
+  const input = { goal, durationWeeks, category };
+  const cacheKey = buildCacheKey("roadmap", input);
 
   if (hasOpenRouter) {
     try {
       const { systemPrompt, userPrompt } = buildRoadmapPrompt({ goal, durationWeeks, category });
-      const raw = await callOpenRouter(systemPrompt, userPrompt);
+      const { content: raw, model } = await callOpenRouter({
+        systemPrompt,
+        userPrompt,
+        requestId: `roadmap-${cacheKey.slice(0, 8)}`
+      });
       const parsed = safeJsonParse(raw);
 
       if (isValidRoadmap(parsed)) {
-        return {
+        const response = {
           ...parsed,
           slug: parsed.slug || slugify(goal),
           internalLinks: parsed.internalLinks?.length ? parsed.internalLinks : roadmapBlueprints[category].internalLinks
         };
+
+        await saveCachedGeneration({
+          cacheKey,
+          type: "roadmap",
+          input,
+          response,
+          provider: "openrouter",
+          model,
+          status: "success"
+        });
+
+        return response;
       }
     } catch (error) {
-      console.error("OpenRouter roadmap generation failed, using fallback.", error.message);
+      logger.warn("OpenRouter roadmap generation failed, checking cache and fallback", {
+        cacheKey,
+        error: error.message
+      });
+
+      const cached = await getCachedGeneration(cacheKey);
+      if (cached?.response) {
+        return cached.response;
+      }
     }
   }
 
-  return buildFallbackRoadmap({ goal, durationWeeks });
+  const fallback = buildFallbackRoadmap({ goal, durationWeeks });
+  await saveCachedGeneration({
+    cacheKey,
+    type: "roadmap",
+    input,
+    response: fallback,
+    provider: "fallback",
+    model: "local-blueprint",
+    status: "fallback",
+    lastError: hasOpenRouter ? "OpenRouter unavailable or invalid response" : "OpenRouter not configured"
+  });
+  return fallback;
 };
 
 export const generateVivaPack = async ({ subject = "dbms", topic = "", level = "intermediate" }) => {
+  const input = { subject, topic, level };
+  const cacheKey = buildCacheKey("viva", input);
+
   if (hasOpenRouter) {
     try {
       const { systemPrompt, userPrompt } = buildVivaPrompt({ subject, topic, level });
-      const raw = await callOpenRouter(systemPrompt, userPrompt);
+      const { content: raw, model } = await callOpenRouter({
+        systemPrompt,
+        userPrompt,
+        requestId: `viva-${cacheKey.slice(0, 8)}`
+      });
       const parsed = safeJsonParse(raw);
 
       if (isValidVivaPack(parsed)) {
-        return {
+        const response = {
           ...parsed,
           slug: parsed.slug || slugify(`${topic || subjectLabels[subject]} viva questions`)
         };
+
+        await saveCachedGeneration({
+          cacheKey,
+          type: "viva",
+          input,
+          response,
+          provider: "openrouter",
+          model,
+          status: "success"
+        });
+
+        return response;
       }
     } catch (error) {
-      console.error("OpenRouter viva generation failed, using fallback.", error.message);
+      logger.warn("OpenRouter viva generation failed, checking cache and fallback", {
+        cacheKey,
+        error: error.message
+      });
+
+      const cached = await getCachedGeneration(cacheKey);
+      if (cached?.response) {
+        return cached.response;
+      }
     }
   }
 
-  return buildFallbackVivaPack({ subject, topic, level });
+  const fallback = buildFallbackVivaPack({ subject, topic, level });
+  await saveCachedGeneration({
+    cacheKey,
+    type: "viva",
+    input,
+    response: fallback,
+    provider: "fallback",
+    model: "local-blueprint",
+    status: "fallback",
+    lastError: hasOpenRouter ? "OpenRouter unavailable or invalid response" : "OpenRouter not configured"
+  });
+  return fallback;
 };
 
 export const generateAIHealthSample = async () => {
@@ -994,10 +1173,15 @@ export const generateAIHealthSample = async () => {
     durationWeeks: 2,
     category
   });
+  const result = await callOpenRouter({
+    systemPrompt,
+    userPrompt,
+    requestId: "ai-healthcheck"
+  });
 
   return {
     provider: "openrouter",
-    model: env.openrouterModel,
-    output: safeJsonParse(await callOpenRouter(systemPrompt, userPrompt))
+    model: result.model,
+    output: safeJsonParse(result.content)
   };
 };

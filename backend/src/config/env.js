@@ -8,8 +8,14 @@ const parseOrigins = (value) =>
     .split(",")
     .map(normalizeOrigin)
     .filter(Boolean);
+const parseList = (value) =>
+  value
+    .split(",")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
 const frontendOrigins = parseOrigins(process.env.FRONTEND_URL || "http://localhost:5173");
+const openrouterModels = parseList(process.env.OPENROUTER_MODEL || "google/gemini-flash-1.5,deepseek/deepseek-chat");
 
 export const env = {
   nodeEnv: process.env.NODE_ENV || "development",
@@ -30,7 +36,10 @@ export const env = {
   searchConsoleSiteUrl: process.env.SEARCH_CONSOLE_SITE_URL || "",
   clarityProjectId: process.env.CLARITY_PROJECT_ID || "",
   openrouterApiKey: process.env.OPENROUTER_API_KEY || "",
-  openrouterModel: process.env.OPENROUTER_MODEL || "deepseek/deepseek-chat"
+  openrouterModel: openrouterModels[0] || "google/gemini-flash-1.5",
+  openrouterModels,
+  openrouterTimeoutMs: Number(process.env.OPENROUTER_TIMEOUT_MS || 20000),
+  openrouterRetryCount: Number(process.env.OPENROUTER_RETRY_COUNT || 1)
 };
 
 export const isProduction = env.nodeEnv === "production";
