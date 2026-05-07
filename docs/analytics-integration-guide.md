@@ -15,3 +15,9 @@ Set `VITE_SEARCH_CONSOLE_VERIFICATION` for site verification meta usage when you
 ## Admin Reporting
 
 The backend endpoint `/api/admin/analytics/overview` returns a combined overview designed for dashboard cards and keyword/top-page tables.
+
+## Current Tracking Surface
+
+- Client-side page view tracking via route change hook
+- Clarity tag injection when configured
+- backend dashboard overview cards for sessions, page views, CTR, and keyword impressions
