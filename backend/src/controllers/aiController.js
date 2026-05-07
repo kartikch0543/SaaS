@@ -3,7 +3,7 @@ import { generateAIHealthSample, generateRoadmap, generateVivaPack } from "../se
 export const getVivaQuestions = async (req, res, next) => {
   try {
     const pack = await generateVivaPack(req.validatedBody);
-    res.json({ items: pack });
+    res.json(pack);
   } catch (error) {
     next(error);
   }

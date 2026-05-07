@@ -6,43 +6,186 @@ import { Button } from "../components/common/Button";
 
 export const RoadmapPage = () => {
   const [goal, setGoal] = useState("frontend roadmap for beginners");
+  const [openWeek, setOpenWeek] = useState(1);
+
   const mutation = useMutation({
     mutationFn: async () => {
       const response = await apiClient.post("/api/ai/roadmap", { goal, durationWeeks: 8 });
       return response.data;
-    }
+    },
+    onSuccess: () => setOpenWeek(1)
   });
+
+  const roadmap = mutation.data;
 
   return (
     <>
       <SeoHead
         title="Roadmap Generator"
-        description="Create structured study roadmaps and interview preparation timelines."
+        description="Create realistic study roadmaps with projects, resources, interview prep, and SEO-ready structure."
         path="/roadmap-generator"
       />
-      <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 lg:px-8">
-        <h1 className="font-display text-4xl font-bold text-fg">Build a practical roadmap around your next milestone</h1>
+      <section className="section-shell py-16">
+        <div className="max-w-3xl">
+          <h1 className="font-display text-4xl font-bold text-fg">Build a roadmap that feels like a real mentor wrote it</h1>
+          <p className="mt-4 text-muted">
+            Generate topic-aware weekly milestones with concrete technologies, realistic exercises, interview prep, portfolio ideas, and long-tail SEO structure.
+          </p>
+        </div>
+
         <div className="mt-6 flex flex-col gap-4 sm:flex-row">
           <input
             className="field-input flex-1 rounded-full"
             value={goal}
             onChange={(event) => setGoal(event.target.value)}
+            placeholder="Try: frontend roadmap for beginners"
           />
           <Button onClick={() => mutation.mutate()}>{mutation.isPending ? "Planning..." : "Generate roadmap"}</Button>
         </div>
-        <div className="mt-10 grid gap-5 md:grid-cols-2">
-          {mutation.data?.milestones?.map((milestone) => (
-            <article key={milestone.week} className="surface-card p-6">
-              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent2">Week {milestone.week}</p>
-              <h2 className="mt-3 font-display text-2xl font-semibold text-fg">{milestone.focus}</h2>
-              <ul className="mt-4 space-y-2 text-muted">
-                {milestone.tasks.map((task) => (
-                  <li key={task}>• {task}</li>
-                ))}
-              </ul>
-            </article>
-          ))}
-        </div>
+
+        {roadmap ? (
+          <>
+            <div className="mt-10 grid gap-6 lg:grid-cols-[0.68fr_0.32fr]">
+              <div className="surface-card p-8">
+                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">AI roadmap</p>
+                <h2 className="mt-3 font-display text-3xl font-semibold text-fg">{roadmap.title}</h2>
+                <p className="mt-4 text-muted">{roadmap.description}</p>
+                <div className="mt-6 space-y-3">
+                  {roadmap.overview?.map((point) => (
+                    <p key={point} className="text-sm leading-7 text-muted">
+                      {point}
+                    </p>
+                  ))}
+                </div>
+                <div className="mt-6 flex flex-wrap gap-3 text-sm">
+                  {roadmap.seoKeywords?.slice(0, 4).map((keyword) => (
+                    <span key={keyword} className="rounded-full bg-panel px-4 py-2 text-muted">
+                      {keyword}
+                    </span>
+                  ))}
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="surface-card p-6">
+                  <h3 className="font-display text-xl font-semibold text-fg">SEO snapshot</h3>
+                  <p className="mt-4 text-sm text-muted">Slug</p>
+                  <p className="mt-1 font-medium text-fg">/{roadmap.slug}</p>
+                  <p className="mt-4 text-sm text-muted">Meta description</p>
+                  <p className="mt-1 text-sm leading-7 text-muted">{roadmap.seoDescription}</p>
+                </div>
+
+                <div className="surface-card p-6">
+                  <h3 className="font-display text-xl font-semibold text-fg">Portfolio ideas</h3>
+                  <ul className="mt-4 space-y-3 text-sm text-muted">
+                    {roadmap.portfolioIdeas?.map((idea) => (
+                      <li key={idea}>- {idea}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+
+            <div className="mt-10 space-y-5">
+              {roadmap.weeks?.map((week) => {
+                const isOpen = openWeek === week.week;
+
+                return (
+                  <article key={week.week} className="surface-card overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => setOpenWeek(isOpen ? 0 : week.week)}
+                      className="flex w-full items-center justify-between px-6 py-5 text-left"
+                    >
+                      <div>
+                        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">Week {week.week}</p>
+                        <h3 className="mt-2 font-display text-2xl font-semibold text-fg">{week.focus}</h3>
+                      </div>
+                      <span className="text-sm text-muted">{isOpen ? "Hide details" : "Show details"}</span>
+                    </button>
+
+                    {isOpen ? (
+                      <div className="border-t border-border/70 px-6 py-6">
+                        <div className="grid gap-6 lg:grid-cols-2">
+                          <div>
+                            <h4 className="font-semibold text-fg">Topics</h4>
+                            <ul className="mt-3 space-y-2 text-sm text-muted">
+                              {week.topics?.map((topic) => (
+                                <li key={topic}>- {topic}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div>
+                            <h4 className="font-semibold text-fg">Practical exercises</h4>
+                            <ul className="mt-3 space-y-2 text-sm text-muted">
+                              {week.exercises?.map((exercise) => (
+                                <li key={exercise}>- {exercise}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 grid gap-6 lg:grid-cols-3">
+                          <div className="surface-panel p-5">
+                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-soft">Mini project</p>
+                            <p className="mt-3 text-sm leading-7 text-muted">{week.project}</p>
+                          </div>
+
+                          <div className="surface-panel p-5">
+                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-soft">Resources</p>
+                            <ul className="mt-3 space-y-2 text-sm text-muted">
+                              {week.resources?.map((resource) => (
+                                <li key={resource}>- {resource}</li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          <div className="surface-panel p-5">
+                            <p className="text-sm font-semibold uppercase tracking-[0.16em] text-soft">Interview prep</p>
+                            <ul className="mt-3 space-y-2 text-sm text-muted">
+                              {week.interviewPrep?.map((item) => (
+                                <li key={item}>- {item}</li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+
+                        <div className="mt-6 rounded-3xl border border-border/70 bg-panel/80 p-5">
+                          <p className="text-sm font-semibold uppercase tracking-[0.16em] text-soft">Revision checkpoint</p>
+                          <p className="mt-3 text-sm leading-7 text-muted">{week.revisionCheckpoint}</p>
+                        </div>
+                      </div>
+                    ) : null}
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-2">
+              <div className="surface-card p-6">
+                <h3 className="font-display text-2xl font-semibold text-fg">FAQ</h3>
+                <div className="mt-5 space-y-5">
+                  {roadmap.faq?.map((item) => (
+                    <div key={item.question}>
+                      <h4 className="font-semibold text-fg">{item.question}</h4>
+                      <p className="mt-2 text-sm leading-7 text-muted">{item.answer}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="surface-card p-6">
+                <h3 className="font-display text-2xl font-semibold text-fg">Internal link ideas</h3>
+                <ul className="mt-5 space-y-3 text-sm text-muted">
+                  {roadmap.internalLinks?.map((link) => (
+                    <li key={link}>- {link}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </>
+        ) : null}
       </section>
     </>
   );
