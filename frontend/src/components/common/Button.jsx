@@ -1,13 +1,13 @@
 export const Button = ({ children, className = "", variant = "primary", ...props }) => {
   const variants = {
-    primary: "bg-ink text-white hover:bg-slate",
-    secondary: "bg-white/70 text-ink ring-1 ring-slate/10 hover:bg-white",
-    ghost: "text-ink hover:bg-white/60"
+    primary: "bg-accent text-white hover:bg-accent/90 focus-visible:ring-accent/30",
+    secondary: "bg-elev text-fg ring-1 ring-border hover:bg-panel focus-visible:ring-accent/20",
+    ghost: "text-fg hover:bg-surface/70 focus-visible:ring-accent/20"
   };
 
   return (
     <button
-      className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition ${variants[variant]} ${className}`}
+      className={`inline-flex items-center justify-center rounded-full px-5 py-3 text-sm font-semibold transition focus-visible:outline-none focus-visible:ring-2 ${variants[variant]} ${className}`}
       {...props}
     >
       {children}

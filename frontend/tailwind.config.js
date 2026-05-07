@@ -1,26 +1,33 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: "class",
   content: ["./index.html", "./src/**/*.{js,jsx}"],
   theme: {
     extend: {
       colors: {
-        ink: "#07111f",
-        mist: "#eff6ff",
-        surf: "#d6f4ff",
-        ember: "#ff7a59",
-        pine: "#0f766e",
-        slate: "#10233b"
+        bg: "rgb(var(--bg) / <alpha-value>)",
+        surface: "rgb(var(--surface) / <alpha-value>)",
+        panel: "rgb(var(--panel) / <alpha-value>)",
+        elev: "rgb(var(--elev) / <alpha-value>)",
+        fg: "rgb(var(--fg) / <alpha-value>)",
+        muted: "rgb(var(--muted) / <alpha-value>)",
+        soft: "rgb(var(--soft) / <alpha-value>)",
+        border: "rgb(var(--border) / <alpha-value>)",
+        accent: "rgb(var(--accent) / <alpha-value>)",
+        accent2: "rgb(var(--accent-2) / <alpha-value>)",
+        success: "rgb(var(--success) / <alpha-value>)",
+        danger: "rgb(var(--danger) / <alpha-value>)"
       },
       fontFamily: {
         display: ["Poppins", "sans-serif"],
         body: ["Manrope", "sans-serif"]
       },
       boxShadow: {
-        glass: "0 20px 60px rgba(7, 17, 31, 0.12)"
+        glass: "var(--shadow-glass)",
+        soft: "var(--shadow-soft)"
       },
       backgroundImage: {
-        "hero-mesh":
-          "radial-gradient(circle at top left, rgba(255,122,89,0.24), transparent 32%), radial-gradient(circle at top right, rgba(15,118,110,0.2), transparent 28%), linear-gradient(135deg, #f8fbff 0%, #eff6ff 50%, #dff5ef 100%)"
+        "hero-mesh": "var(--hero-gradient)"
       }
     }
   },

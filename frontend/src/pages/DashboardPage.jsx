@@ -17,10 +17,22 @@ export const DashboardPage = () => {
   const dashboard = dashboardQuery.data;
   const analytics = analyticsQuery.data;
 
+  if (dashboardQuery.isLoading || analyticsQuery.isLoading) {
+    return (
+      <section className="section-shell py-16">
+        <div className="grid gap-4 md:grid-cols-4">
+          {Array.from({ length: 4 }, (_, index) => (
+            <div key={index} className="surface-card h-32 animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
+
   return (
     <>
       <SeoHead title="Student Dashboard" description="Track study streaks, quiz performance, and content engagement." path="/dashboard" />
-      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+      <section className="section-shell py-16">
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard label="Current streak" value={`${dashboard?.streakDays || 0} days`} hint="Consistency builds retention." />
           <StatCard label="Completed topics" value={dashboard?.completedTopics || 0} hint="Micro-progress compounds over a semester." />
@@ -29,9 +41,9 @@ export const DashboardPage = () => {
         </div>
         <div className="mt-8 grid gap-8 lg:grid-cols-[1.15fr_0.85fr]">
           <StudyChart data={dashboard?.weeklyStudyTrend || []} />
-          <div className="rounded-3xl border border-white/60 bg-white/85 p-6 shadow-glass">
-            <h2 className="font-display text-xl font-semibold text-ink">Acquisition and engagement snapshot</h2>
-            <div className="mt-6 space-y-3 text-slate-700">
+          <div className="surface-card p-6">
+            <h2 className="font-display text-xl font-semibold text-fg">Acquisition and engagement snapshot</h2>
+            <div className="mt-6 space-y-3 text-muted">
               <p>Sessions: {analytics?.metrics?.sessions || 0}</p>
               <p>Page views: {analytics?.metrics?.pageViews || 0}</p>
               <p>CTR: {analytics?.metrics?.ctr || 0}%</p>

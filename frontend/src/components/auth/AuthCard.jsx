@@ -25,7 +25,7 @@ export const AuthCard = () => {
   };
 
   return (
-    <div className="rounded-[2rem] border border-white/70 bg-white/85 p-8 shadow-glass">
+    <div className="surface-card p-8">
       <div className="mb-6 flex gap-3">
         <Button variant={mode === "login" ? "primary" : "secondary"} onClick={() => setMode("login")}>
           Login
@@ -36,14 +36,14 @@ export const AuthCard = () => {
       </div>
       <form className="space-y-4" onSubmit={handleSubmit}>
         <input
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+          className="field-input"
           placeholder="College email"
           type="email"
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
         <input
-          className="w-full rounded-2xl border border-slate-200 px-4 py-3"
+          className="field-input"
           placeholder="Secure password"
           type="password"
           value={password}
