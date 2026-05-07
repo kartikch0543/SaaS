@@ -20,7 +20,20 @@ export const createApp = () => {
   app.use(compression());
   app.use(
     cors({
-      origin: env.frontendUrl,
+      origin: (origin, callback) => {
+        if (!origin) {
+          return callback(null, true);
+        }
+
+        const normalizedOrigin = origin.replace(/\/+$/, "");
+        const isAllowed = env.frontendOrigins.includes(normalizedOrigin);
+
+        if (isAllowed) {
+          return callback(null, true);
+        }
+
+        return callback(new Error(`CORS blocked for origin: ${origin}`));
+      },
       credentials: true
     })
   );
