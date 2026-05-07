@@ -1,4 +1,5 @@
 import cors from "cors";
+import compression from "compression";
 import express from "express";
 import helmet from "helmet";
 import morgan from "morgan";
@@ -16,6 +17,7 @@ export const createApp = () => {
   const app = express();
 
   app.use(helmet());
+  app.use(compression());
   app.use(
     cors({
       origin: env.frontendUrl,

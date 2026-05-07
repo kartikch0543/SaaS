@@ -5,7 +5,7 @@ StudyForge AI is a production-oriented MERN project for students who need viva p
 ## Stack
 
 - Frontend: React, Vite, Tailwind CSS, React Query, Firebase Auth, Framer Motion, Recharts
-- Backend: Node.js, Express, MongoDB Atlas, JWT, Firebase Admin, Helmet, CORS, rate limiting
+- Backend: Node.js, Express, MongoDB Atlas, JWT, Firebase Admin, Helmet, CORS, rate limiting, compression
 - Deployment: Vercel for frontend, Render for backend, MongoDB Atlas for data
 
 ## Product Highlights
@@ -13,8 +13,19 @@ StudyForge AI is a production-oriented MERN project for students who need viva p
 - Google and email authentication via Firebase plus backend session tokens
 - AI-inspired viva question generator and roadmap generator
 - Student dashboard with streaks, progress analytics, and engagement reports
-- SEO-ready long-tail content pages with metadata, canonical URLs, and FAQ schema
+- SEO-ready long-tail content pages with metadata, canonical URLs, breadcrumbs, FAQ schema, and internal linking
 - Analytics hooks for GA4, Clarity, and Search Console reporting workflows
+- Token-driven light and dark theme system built with Tailwind `dark` mode and CSS variables
+
+## Ranking-Focused Pages
+
+- `/dbms-viva-questions-for-beginners`
+- `/sql-joins-explained-with-examples`
+- `/oops-interview-questions-for-students`
+- `/computer-networks-important-topics`
+- `/how-to-prepare-for-technical-viva`
+- `/frontend-roadmap-for-beginners`
+- `/os-short-notes-for-exams`
 
 ## Quick Start
 

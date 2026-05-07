@@ -11,9 +11,6 @@ const DashboardPage = lazy(() =>
 );
 const VivaPrepPage = lazy(() => import("../pages/VivaPrepPage").then((module) => ({ default: module.VivaPrepPage })));
 const RoadmapPage = lazy(() => import("../pages/RoadmapPage").then((module) => ({ default: module.RoadmapPage })));
-const SeoLibraryPage = lazy(() =>
-  import("../pages/SeoLibraryPage").then((module) => ({ default: module.SeoLibraryPage }))
-);
 const ArticlePage = lazy(() => import("../pages/ArticlePage").then((module) => ({ default: module.ArticlePage })));
 
 export const AppRoutes = () => {
@@ -23,8 +20,8 @@ export const AppRoutes = () => {
     <AppShell>
       <Suspense
         fallback={
-          <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
-            <div className="h-40 animate-pulse rounded-3xl bg-white/70 shadow-glass" />
+          <div className="section-shell py-16">
+            <div className="surface-card h-40 animate-pulse" />
           </div>
         }
       >
@@ -41,7 +38,6 @@ export const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
-          <Route path="/seo-library" element={<SeoLibraryPage />} />
           <Route path="/:slug" element={<ArticlePage />} />
         </Routes>
       </Suspense>
