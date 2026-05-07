@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import apiClient from "../api/client";
 import { SeoHead } from "../components/seo/SeoHead";
 import { Button } from "../components/common/Button";
@@ -13,7 +14,10 @@ export const RoadmapPage = () => {
       const response = await apiClient.post("/api/ai/roadmap", { goal, durationWeeks: 8 });
       return response.data;
     },
-    onSuccess: () => setOpenWeek(1)
+    onSuccess: () => setOpenWeek(1),
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || error?.message || "Roadmap generation failed.");
+    }
   });
 
   const roadmap = mutation.data;
@@ -21,8 +25,9 @@ export const RoadmapPage = () => {
   return (
     <>
       <SeoHead
-        title="Roadmap Generator"
-        description="Create realistic study roadmaps with projects, resources, interview prep, and SEO-ready structure."
+        title={roadmap?.seoTitle || "Roadmap Generator"}
+        description={roadmap?.seoDescription || "Create realistic study roadmaps with projects, resources, interview prep, and SEO-ready structure."}
+        keywords={roadmap?.seoKeywords || []}
         path="/roadmap-generator"
       />
       <section className="section-shell py-16">
@@ -43,10 +48,25 @@ export const RoadmapPage = () => {
           <Button onClick={() => mutation.mutate()}>{mutation.isPending ? "Planning..." : "Generate roadmap"}</Button>
         </div>
 
+        {mutation.isPending ? (
+          <div className="mt-8 surface-card p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">Generating roadmap</p>
+            <p className="mt-3 text-sm leading-7 text-muted">
+              Analyzing the topic, building a week-by-week progression, and preparing projects, resources, and interview prep.
+            </p>
+          </div>
+        ) : null}
+
+        {mutation.isError ? (
+          <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
+            The roadmap request did not complete. Check your backend env, OpenRouter key, and deployment logs. A fallback should return quickly after this patch, so repeated failure usually means the API itself is not reachable.
+          </div>
+        ) : null}
+
         {roadmap ? (
           <>
-            <div className="mt-10 grid gap-6 lg:grid-cols-[0.68fr_0.32fr]">
-              <div className="surface-card p-8">
+            <div className="mt-10 surface-card p-8">
+              <div className="max-w-4xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">AI roadmap</p>
                 <h2 className="mt-3 font-display text-3xl font-semibold text-fg">{roadmap.title}</h2>
                 <p className="mt-4 text-muted">{roadmap.description}</p>
@@ -56,32 +76,6 @@ export const RoadmapPage = () => {
                       {point}
                     </p>
                   ))}
-                </div>
-                <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                  {roadmap.seoKeywords?.slice(0, 4).map((keyword) => (
-                    <span key={keyword} className="rounded-full bg-panel px-4 py-2 text-muted">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="surface-card p-6">
-                  <h3 className="font-display text-xl font-semibold text-fg">SEO snapshot</h3>
-                  <p className="mt-4 text-sm text-muted">Slug</p>
-                  <p className="mt-1 font-medium text-fg">/{roadmap.slug}</p>
-                  <p className="mt-4 text-sm text-muted">Meta description</p>
-                  <p className="mt-1 text-sm leading-7 text-muted">{roadmap.seoDescription}</p>
-                </div>
-
-                <div className="surface-card p-6">
-                  <h3 className="font-display text-xl font-semibold text-fg">Portfolio ideas</h3>
-                  <ul className="mt-4 space-y-3 text-sm text-muted">
-                    {roadmap.portfolioIdeas?.map((idea) => (
-                      <li key={idea}>- {idea}</li>
-                    ))}
-                  </ul>
                 </div>
               </div>
             </div>
@@ -164,6 +158,15 @@ export const RoadmapPage = () => {
 
             <div className="mt-10 grid gap-6 lg:grid-cols-2">
               <div className="surface-card p-6">
+                <h3 className="font-display text-2xl font-semibold text-fg">Portfolio ideas</h3>
+                <ul className="mt-5 space-y-3 text-sm text-muted">
+                  {roadmap.portfolioIdeas?.map((idea) => (
+                    <li key={idea}>- {idea}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="surface-card p-6">
                 <h3 className="font-display text-2xl font-semibold text-fg">FAQ</h3>
                 <div className="mt-5 space-y-5">
                   {roadmap.faq?.map((item) => (
@@ -173,15 +176,6 @@ export const RoadmapPage = () => {
                     </div>
                   ))}
                 </div>
-              </div>
-
-              <div className="surface-card p-6">
-                <h3 className="font-display text-2xl font-semibold text-fg">Internal link ideas</h3>
-                <ul className="mt-5 space-y-3 text-sm text-muted">
-                  {roadmap.internalLinks?.map((link) => (
-                    <li key={link}>- {link}</li>
-                  ))}
-                </ul>
               </div>
             </div>
           </>

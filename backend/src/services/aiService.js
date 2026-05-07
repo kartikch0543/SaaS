@@ -11,6 +11,8 @@ const openRouterClient = hasOpenRouter
     })
   : null;
 
+const AI_TIMEOUT_MS = 9000;
+
 const roadmapBlueprints = {
   frontend: {
     label: "frontend development",
@@ -722,14 +724,19 @@ const callOpenRouter = async (systemPrompt, userPrompt) => {
     throw new Error("OPENROUTER_API_KEY is not configured.");
   }
 
-  const completion = await openRouterClient.chat.completions.create({
-    model: env.openrouterModel,
-    temperature: 0.8,
-    messages: [
-      { role: "system", content: systemPrompt },
-      { role: "user", content: userPrompt }
-    ]
-  });
+  const completion = await Promise.race([
+    openRouterClient.chat.completions.create({
+      model: env.openrouterModel,
+      temperature: 0.8,
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt }
+      ]
+    }),
+    new Promise((_, reject) => {
+      setTimeout(() => reject(new Error(`AI request timed out after ${AI_TIMEOUT_MS}ms`)), AI_TIMEOUT_MS);
+    })
+  ]);
 
   return completion.choices[0]?.message?.content?.trim() || "";
 };

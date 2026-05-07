@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import apiClient from "../api/client";
 import { Button } from "../components/common/Button";
 import { SeoHead } from "../components/seo/SeoHead";
@@ -12,6 +13,9 @@ export const VivaPrepPage = () => {
     mutationFn: async () => {
       const response = await apiClient.post("/api/ai/viva", { subject, topic, level: "intermediate" });
       return response.data;
+    },
+    onError: (error) => {
+      toast.error(error?.response?.data?.message || error?.message || "Viva generation failed.");
     }
   });
 
@@ -20,8 +24,9 @@ export const VivaPrepPage = () => {
   return (
     <>
       <SeoHead
-        title="AI Viva Preparation"
-        description="Generate topic-aware viva questions with answers, examples, follow-up prompts, and interview framing."
+        title={vivaPack?.seoTitle || "AI Viva Preparation"}
+        description={vivaPack?.seoDescription || "Generate topic-aware viva questions with answers, examples, follow-up prompts, and interview framing."}
+        keywords={vivaPack?.seoKeywords || []}
         path="/viva-prep"
       />
       <section className="section-shell py-16">
@@ -61,39 +66,28 @@ export const VivaPrepPage = () => {
           <Button onClick={() => mutation.mutate()}>{mutation.isPending ? "Generating..." : "Generate viva pack"}</Button>
         </div>
 
+        {mutation.isPending ? (
+          <div className="mt-8 surface-card p-6">
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">Generating viva pack</p>
+            <p className="mt-3 text-sm leading-7 text-muted">
+              Building topic-specific questions, concise answers, follow-up prompts, and interview framing for your selected concept.
+            </p>
+          </div>
+        ) : null}
+
+        {mutation.isError ? (
+          <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
+            The viva request did not complete. Check your backend env, OpenRouter key, and deployment logs. After this patch, the backend should fall back quickly instead of hanging for a long time.
+          </div>
+        ) : null}
+
         {vivaPack ? (
           <>
-            <div className="mt-10 grid gap-6 lg:grid-cols-[0.68fr_0.32fr]">
-              <div className="surface-card p-8">
+            <div className="mt-10 surface-card p-8">
+              <div className="max-w-4xl">
                 <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">AI viva pack</p>
                 <h2 className="mt-3 font-display text-3xl font-semibold text-fg">{vivaPack.title}</h2>
                 <p className="mt-4 text-muted">{vivaPack.description}</p>
-                <div className="mt-6 flex flex-wrap gap-3 text-sm">
-                  {vivaPack.seoKeywords?.slice(0, 4).map((keyword) => (
-                    <span key={keyword} className="rounded-full bg-panel px-4 py-2 text-muted">
-                      {keyword}
-                    </span>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="surface-card p-6">
-                  <h3 className="font-display text-xl font-semibold text-fg">SEO snapshot</h3>
-                  <p className="mt-4 text-sm text-muted">Slug</p>
-                  <p className="mt-1 font-medium text-fg">/{vivaPack.slug}</p>
-                  <p className="mt-4 text-sm text-muted">Meta description</p>
-                  <p className="mt-1 text-sm leading-7 text-muted">{vivaPack.seoDescription}</p>
-                </div>
-
-                <div className="surface-card p-6">
-                  <h3 className="font-display text-xl font-semibold text-fg">Internal link ideas</h3>
-                  <ul className="mt-4 space-y-2 text-sm text-muted">
-                    {vivaPack.internalLinks?.map((link) => (
-                      <li key={link}>- {link}</li>
-                    ))}
-                  </ul>
-                </div>
               </div>
             </div>
 
