@@ -1,0 +1,11 @@
+node_modules
+dist
+coverage
+.env
+.env.*
+!.env.example
+npm-debug.log*
+backend/uploads/*
+!backend/uploads/.gitkeep
+frontend/.vercel
+.DS_Store
