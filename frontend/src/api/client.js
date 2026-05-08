@@ -8,7 +8,7 @@ const apiClient = axios.create({
   headers: {
     "Content-Type": "application/json"
   },
-  timeout: 20000
+  timeout: 45000
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -33,5 +33,19 @@ apiClient.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+export const warmBackend = async () => {
+  try {
+    await apiClient.get("/api/health", { timeout: 45000 });
+    return true;
+  } catch {
+    try {
+      await apiClient.get("/health", { timeout: 45000 });
+      return true;
+    } catch {
+      return false;
+    }
+  }
+};
 
 export default apiClient;

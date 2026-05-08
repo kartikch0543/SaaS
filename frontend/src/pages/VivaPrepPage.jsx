@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
-import apiClient from "../api/client";
+import apiClient, { warmBackend } from "../api/client";
 import { Button } from "../components/common/Button";
 import { SeoHead } from "../components/seo/SeoHead";
 
@@ -11,6 +11,7 @@ export const VivaPrepPage = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
+      await warmBackend();
       const response = await apiClient.post("/api/ai/viva", { subject, topic, level: "intermediate" });
       return response.data;
     },

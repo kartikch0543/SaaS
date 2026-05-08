@@ -17,6 +17,23 @@ import { logger } from "./utils/logger.js";
 
 export const createApp = () => {
   const app = express();
+  const isAllowedOrigin = (origin) => {
+    const normalizedOrigin = origin.replace(/\/+$/, "");
+
+    if (env.frontendOrigins.includes(normalizedOrigin)) {
+      return true;
+    }
+
+    if (/^https:\/\/.*\.vercel\.app$/i.test(normalizedOrigin)) {
+      return true;
+    }
+
+    if (/^http:\/\/localhost:\d+$/i.test(normalizedOrigin)) {
+      return true;
+    }
+
+    return false;
+  };
 
   app.use(helmet());
   app.use(compression());
@@ -27,10 +44,7 @@ export const createApp = () => {
           return callback(null, true);
         }
 
-        const normalizedOrigin = origin.replace(/\/+$/, "");
-        const isAllowed = env.frontendOrigins.includes(normalizedOrigin);
-
-        if (isAllowed) {
+        if (isAllowedOrigin(origin)) {
           return callback(null, true);
         }
 
@@ -71,6 +85,7 @@ export const createApp = () => {
   );
 
   app.use("/health", healthRoutes);
+  app.use("/api/health", healthRoutes);
   app.use("/api/auth", authRoutes);
   app.use("/api/ai", aiRoutes);
   app.use("/api/dashboard", dashboardRoutes);
