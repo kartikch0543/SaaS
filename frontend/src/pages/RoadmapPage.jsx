@@ -12,7 +12,12 @@ export const RoadmapPage = () => {
   const mutation = useMutation({
     mutationFn: async () => {
       await warmBackend();
-      const response = await apiClient.post("/api/ai/roadmap", { goal, durationWeeks: 8 });
+      const payload = {
+        goal,
+        topic: goal,
+        durationWeeks: 8
+      };
+      const response = await apiClient.post("/api/ai/roadmap", payload);
       return response.data;
     },
     onSuccess: () => setOpenWeek(1),
@@ -63,7 +68,7 @@ export const RoadmapPage = () => {
 
         {mutation.isError ? (
           <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
-            The roadmap request did not complete. Check your backend env, OpenRouter key, and deployment logs. A fallback should return quickly after this patch, so repeated failure usually means the API itself is not reachable.
+            {mutation.error?.message || "The roadmap request did not complete."}
             <div className="mt-4">
               <Button variant="secondary" onClick={() => mutation.mutate()}>
                 Retry generation

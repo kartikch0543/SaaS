@@ -3,6 +3,11 @@ import { logger } from "../utils/logger.js";
 
 export const getVivaQuestions = async (req, res, next) => {
   try {
+    logger.info("Viva generation requested", {
+      requestId: req.requestId,
+      body: req.body,
+      validatedBody: req.validatedBody
+    });
     const pack = await generateVivaPack(req.validatedBody);
     res.json(pack);
   } catch (error) {
@@ -19,6 +24,11 @@ export const getVivaQuestions = async (req, res, next) => {
 
 export const getRoadmap = async (req, res, next) => {
   try {
+    logger.info("Roadmap generation requested", {
+      requestId: req.requestId,
+      body: req.body,
+      validatedBody: req.validatedBody
+    });
     const roadmap = await generateRoadmap(req.validatedBody);
     res.json(roadmap);
   } catch (error) {
