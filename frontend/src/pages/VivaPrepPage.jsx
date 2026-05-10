@@ -51,7 +51,7 @@ export const VivaPrepPage = () => {
               if (nextSubject === "cn") setTopic("TCP vs UDP");
               if (nextSubject === "os") setTopic("Process vs thread");
               if (nextSubject === "cybersecurity") setTopic("OWASP Top 10");
-              if (nextSubject === "marketing") setTopic("SEO keyword research");
+              if (nextSubject === "marketing") setTopic("Content strategy and campaign planning");
               if (nextSubject === "design") setTopic("UX case study presentation");
               if (nextSubject === "cloud") setTopic("AWS IAM basics");
             }}
@@ -71,7 +71,7 @@ export const VivaPrepPage = () => {
             className="field-input rounded-full"
             value={topic}
             onChange={(event) => setTopic(event.target.value)}
-            placeholder="Try: DBMS normalization, AWS IAM basics, SEO keyword research"
+            placeholder="Try: DBMS normalization, AWS IAM basics, content strategy basics"
           />
 
           <Button onClick={() => mutation.mutate()}>{mutation.isPending ? "Generating..." : "Generate viva pack"}</Button>

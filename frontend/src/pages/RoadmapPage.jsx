@@ -32,7 +32,7 @@ export const RoadmapPage = () => {
     <>
       <SeoHead
         title={roadmap?.seoTitle || "Roadmap Generator"}
-        description={roadmap?.seoDescription || "Create realistic study roadmaps with projects, resources, interview prep, and SEO-ready structure."}
+        description={roadmap?.seoDescription || "Create realistic study roadmaps with projects, resources, interview prep, and structured learning milestones."}
         keywords={roadmap?.seoKeywords || []}
         path="/roadmap-generator"
       />
@@ -40,7 +40,7 @@ export const RoadmapPage = () => {
         <div className="max-w-3xl">
           <h1 className="font-display text-4xl font-bold text-fg">Build a roadmap that feels like a real mentor wrote it</h1>
           <p className="mt-4 text-muted">
-            Generate topic-aware weekly milestones with concrete technologies, realistic exercises, interview prep, portfolio ideas, and long-tail SEO structure.
+            Generate topic-aware weekly milestones with concrete technologies, realistic exercises, interview prep, and portfolio-ready projects.
           </p>
         </div>
 

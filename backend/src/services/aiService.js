@@ -1741,15 +1741,16 @@ const buildRoadmapPrompt = ({ goal, durationWeeks, category }) => {
   const internalLinks = blueprint?.internalLinks || buildGenericInternalLinks(category);
 
   return {
-    systemPrompt: `You are an elite learning architect, SEO strategist, and technical mentor generating production-grade roadmap content for a premium AI education SaaS product.
+    systemPrompt: `You are an elite learning architect and technical mentor generating production-grade roadmap content for a premium AI education SaaS product.
 Rules:
 - Return only valid JSON.
 - Do not use placeholders or generic filler.
 - Every week must feel specific to the goal and different from the others.
 - Use real technologies, concrete exercises, believable projects, and interview-oriented preparation.
-- The roadmap must feel useful enough for a recruiter, student, and SEO reader at the same time.
+- The roadmap must feel useful enough for a recruiter, student, and serious learner at the same time.
 - Avoid repeating wording across weeks.
-- Prefer educational depth over empty motivational language.`,
+- Prefer educational depth over empty motivational language.
+- Do not mention SEO, rankings, keywords, metadata, or search optimization in the visible roadmap content.`,
     userPrompt: `Create a ${durationWeeks}-week roadmap for "${goal}".
 Detected category: ${category}
 Category-specific topics that must meaningfully appear across the roadmap: ${priorityTopics.join(", ")}
@@ -1806,8 +1807,8 @@ Requirements:
 - Include high-signal milestones, topics, and subtopics that a real mentor would mention for this domain.
 - If the topic is non-software, adapt the roadmap to that industry instead of forcing developer content.
 - Resources should be free or easy to access.
-- FAQ should target informational long-tail search intent.
-- Slug must be clean, lowercase, and SEO-friendly.`
+- FAQ should answer practical learner questions naturally.
+- Slug must be clean, lowercase, and topic-specific.`
   };
 };
 
@@ -1820,13 +1821,14 @@ const buildVivaPrompt = ({ subject, topic, level }) => {
   const internalLinks = blueprint?.internalLinks || buildGenericInternalLinks(category);
 
   return {
-    systemPrompt: `You are an expert viva coach, interviewer, and SEO writer creating premium technical preparation content.
+    systemPrompt: `You are an expert viva coach and interviewer creating premium technical preparation content.
 Rules:
 - Return only valid JSON.
 - Questions must be topic-specific and not generic.
 - Answers must be concise but useful.
 - Include practical examples, follow-up prompts, and interview framing.
-- Avoid repeating sentence structure across items.`,
+- Avoid repeating sentence structure across items.
+- Do not mention SEO, keywords, metadata, or rankings in the visible viva content.`,
     userPrompt: `Generate a ${level} viva pack for subject "${subjectLabels[subject] || subject}" focused on "${resolvedTopic}".
 Topic cues that should strongly influence question selection: ${topicHints}
 Detected category: ${category}
@@ -1865,8 +1867,8 @@ Requirements:
 - Generate 5 to 7 questions.
 - Keep the content tightly focused on the requested topic.
 - Use realistic oral-exam wording.
-- Slug must be SEO-friendly and topic-specific.
-- FAQ should target informational search intent.`
+- Slug must be topic-specific.
+- FAQ should answer natural learner questions.`
   };
 };
 
