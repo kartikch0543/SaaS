@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const vivaSchema = z.object({
-  subject: z.enum(["dbms", "oops", "cn", "os"]).default("dbms"),
+  subject: z.string().min(2).max(40).default("general"),
   topic: z.string().min(3).max(120).optional().or(z.literal("")),
   level: z.enum(["beginner", "intermediate", "advanced"]).default("intermediate")
 });

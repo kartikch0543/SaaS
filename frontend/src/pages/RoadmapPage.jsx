@@ -76,7 +76,19 @@ export const RoadmapPage = () => {
           <>
             <div className="mt-10 surface-card p-8">
               <div className="max-w-4xl">
-                <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">AI roadmap</p>
+                <div className="flex flex-wrap items-center gap-3">
+                  <p className="text-sm font-semibold uppercase tracking-[0.18em] text-accent2">AI roadmap</p>
+                  {roadmap.category ? (
+                    <span className="rounded-full border border-border/70 bg-panel px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-soft">
+                      {roadmap.category}
+                    </span>
+                  ) : null}
+                  {roadmap.difficulty ? (
+                    <span className="rounded-full border border-border/70 bg-panel px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-soft">
+                      {roadmap.difficulty}
+                    </span>
+                  ) : null}
+                </div>
                 <h2 className="mt-3 font-display text-3xl font-semibold text-fg">{roadmap.title}</h2>
                 <p className="mt-4 text-muted">{roadmap.description}</p>
                 <div className="mt-6 space-y-3">
@@ -86,6 +98,53 @@ export const RoadmapPage = () => {
                     </p>
                   ))}
                 </div>
+              </div>
+            </div>
+
+            <div className="mt-10 grid gap-6 xl:grid-cols-4 md:grid-cols-2">
+              <div className="surface-card p-6">
+                <h3 className="font-display text-xl font-semibold text-fg">Milestones</h3>
+                <ul className="mt-4 space-y-2 text-sm text-muted">
+                  {roadmap.milestones?.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="surface-card p-6">
+                <h3 className="font-display text-xl font-semibold text-fg">Tools and platforms</h3>
+                <ul className="mt-4 space-y-2 text-sm text-muted">
+                  {roadmap.tools?.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="surface-card p-6">
+                <h3 className="font-display text-xl font-semibold text-fg">Project path</h3>
+                <ul className="mt-4 space-y-2 text-sm text-muted">
+                  {roadmap.projects?.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="surface-card p-6">
+                <h3 className="font-display text-xl font-semibold text-fg">Learning resources</h3>
+                <ul className="mt-4 space-y-2 text-sm text-muted">
+                  {roadmap.resources?.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="surface-card p-6">
+                <h3 className="font-display text-xl font-semibold text-fg">Interview prep</h3>
+                <ul className="mt-4 space-y-2 text-sm text-muted">
+                  {roadmap.interviewPrep?.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
               </div>
             </div>
 
@@ -176,6 +235,15 @@ export const RoadmapPage = () => {
               </div>
 
               <div className="surface-card p-6">
+                <h3 className="font-display text-2xl font-semibold text-fg">Certifications and add-ons</h3>
+                <ul className="mt-5 space-y-3 text-sm text-muted">
+                  {roadmap.certifications?.map((item) => (
+                    <li key={item}>- {item}</li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="surface-card p-6 lg:col-span-2">
                 <h3 className="font-display text-2xl font-semibold text-fg">FAQ</h3>
                 <div className="mt-5 space-y-5">
                   {roadmap.faq?.map((item) => (

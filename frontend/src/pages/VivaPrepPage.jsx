@@ -6,8 +6,8 @@ import { Button } from "../components/common/Button";
 import { SeoHead } from "../components/seo/SeoHead";
 
 export const VivaPrepPage = () => {
-  const [subject, setSubject] = useState("dbms");
-  const [topic, setTopic] = useState("DBMS normalization");
+  const [subject, setSubject] = useState("general");
+  const [topic, setTopic] = useState("SDE roadmap interview questions");
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -45,23 +45,33 @@ export const VivaPrepPage = () => {
             onChange={(event) => {
               const nextSubject = event.target.value;
               setSubject(nextSubject);
+              if (nextSubject === "general") setTopic("SDE roadmap interview questions");
               if (nextSubject === "dbms") setTopic("DBMS normalization");
               if (nextSubject === "oops") setTopic("OOPS polymorphism");
               if (nextSubject === "cn") setTopic("TCP vs UDP");
               if (nextSubject === "os") setTopic("Process vs thread");
+              if (nextSubject === "cybersecurity") setTopic("OWASP Top 10");
+              if (nextSubject === "marketing") setTopic("SEO keyword research");
+              if (nextSubject === "design") setTopic("UX case study presentation");
+              if (nextSubject === "cloud") setTopic("AWS IAM basics");
             }}
           >
+            <option value="general">Custom Topic</option>
             <option value="dbms">DBMS</option>
             <option value="oops">OOPS</option>
             <option value="cn">Computer Networks</option>
             <option value="os">Operating Systems</option>
+            <option value="cybersecurity">Cybersecurity</option>
+            <option value="marketing">Digital Marketing</option>
+            <option value="design">UI/UX Design</option>
+            <option value="cloud">Cloud Computing</option>
           </select>
 
           <input
             className="field-input rounded-full"
             value={topic}
             onChange={(event) => setTopic(event.target.value)}
-            placeholder="Try: DBMS normalization"
+            placeholder="Try: DBMS normalization, AWS IAM basics, SEO keyword research"
           />
 
           <Button onClick={() => mutation.mutate()}>{mutation.isPending ? "Generating..." : "Generate viva pack"}</Button>
