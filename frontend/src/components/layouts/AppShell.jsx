@@ -45,11 +45,11 @@ export const AppShell = ({ children }) => {
       </header>
       <main>{children}</main>
       <footer className="border-t border-border/70 bg-surface/80">
-        <div className="section-shell grid gap-8 py-10 md:grid-cols-3">
+        <div className="section-shell grid gap-8 py-10 md:grid-cols-4">
           <div>
             <p className="font-display text-lg font-semibold text-fg">StudyForge AI</p>
             <p className="mt-3 max-w-sm text-sm text-muted">
-              A premium student learning workspace built around real search intent, measurable progress, and confident viva preparation.
+              A premium student learning workspace built around technical viva preparation, roadmaps, revision content, and measurable progress.
             </p>
           </div>
           <div>
@@ -63,6 +63,23 @@ export const AppShell = ({ children }) => {
               </Link>
               <Link to="/frontend-roadmap-for-beginners" className="block hover:text-accent">
                 Frontend roadmap for beginners
+              </Link>
+            </div>
+          </div>
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-soft">Study hubs</p>
+            <div className="mt-4 space-y-2 text-sm text-muted">
+              <Link to="/blog" className="block hover:text-accent">
+                Blog and study notes
+              </Link>
+              <Link to="/roadmap" className="block hover:text-accent">
+                Roadmap hub
+              </Link>
+              <Link to="/viva" className="block hover:text-accent">
+                Viva questions hub
+              </Link>
+              <Link to="/interview-prep" className="block hover:text-accent">
+                Interview prep hub
               </Link>
             </div>
           </div>

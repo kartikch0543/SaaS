@@ -33,5 +33,5 @@ test("renders main home hero content", () => {
     </QueryClientProvider>
   );
 
-  expect(screen.getByText(/Turn syllabus chaos into focused prep/i)).toBeInTheDocument();
+  expect(screen.getByText(/Turn syllabus chaos into focused viva preparation/i)).toBeInTheDocument();
 });

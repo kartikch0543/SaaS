@@ -3,10 +3,11 @@ import { Link, useParams } from "react-router-dom";
 import apiClient from "../api/client";
 import { SeoHead } from "../components/seo/SeoHead";
 import { siteConfig } from "../constants/site";
-import { buildFaqSchema } from "../utils/seo";
+import { buildArticleSchema, buildBreadcrumbSchema, buildFaqSchema } from "../utils/seo";
+import { getContentPath, normalizeSectionLabel } from "../utils/contentPaths";
 
 export const ArticlePage = () => {
-  const { slug } = useParams();
+  const { slug, section } = useParams();
   const postQuery = useQuery({
     queryKey: ["post", slug],
     queryFn: async () => (await apiClient.get(`/api/blogs/${slug}`)).data,
@@ -41,24 +42,15 @@ export const ArticlePage = () => {
 
   const data = postQuery.data;
   const relatedPosts = posts?.filter((post) => data.relatedSlugs?.includes(post.slug)) || [];
+  const canonicalPath = data.canonicalPath || (section ? `/${section}/${data.slug}` : `/${data.slug}`);
   const schemas = [
     buildFaqSchema(data.faqs),
-    {
-      "@context": "https://schema.org",
-      "@type": "BreadcrumbList",
-      itemListElement: [
-        { "@type": "ListItem", position: 1, name: "Home", item: siteConfig.baseUrl },
-        { "@type": "ListItem", position: 2, name: data.title, item: `${siteConfig.baseUrl}/${data.slug}` }
-      ]
-    },
-    {
-      "@context": "https://schema.org",
-      "@type": "Article",
-      headline: data.title,
-      description: data.description,
-      dateModified: data.updatedAt,
-      mainEntityOfPage: `${siteConfig.baseUrl}/${data.slug}`
-    }
+    buildBreadcrumbSchema([
+      { name: "Home", item: siteConfig.baseUrl },
+      ...(section ? [{ name: normalizeSectionLabel(section), item: `${siteConfig.baseUrl}/${section}` }] : []),
+      { name: data.title, item: `${siteConfig.baseUrl}${canonicalPath}` }
+    ]),
+    buildArticleSchema({ ...data, canonicalPath })
   ];
 
   return (
@@ -67,14 +59,23 @@ export const ArticlePage = () => {
         title={data.title}
         description={data.description}
         keywords={data.keywords}
-        path={`/${data.slug}`}
+        path={canonicalPath}
         schema={schemas}
+        type="article"
       />
       <article className="section-shell py-16">
         <nav aria-label="Breadcrumb" className="text-sm text-soft">
           <Link to="/" className="hover:text-accent">
             Home
           </Link>
+          {section ? (
+            <>
+              <span className="px-2">/</span>
+              <Link to={`/${section}`} className="hover:text-accent">
+                {normalizeSectionLabel(section)}
+              </Link>
+            </>
+          ) : null}
           <span className="px-2">/</span>
           <span className="text-muted">{data.title}</span>
         </nav>
@@ -123,7 +124,7 @@ export const ArticlePage = () => {
               <h2 className="font-display text-xl font-semibold text-fg">Related reading</h2>
               <div className="mt-4 space-y-3 text-sm text-muted">
                 {relatedPosts.map((post) => (
-                  <Link key={post.slug} to={`/${post.slug}`} className="block hover:text-accent">
+                  <Link key={post.slug} to={getContentPath(post)} className="block hover:text-accent">
                     {post.title}
                   </Link>
                 ))}

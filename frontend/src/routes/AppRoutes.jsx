@@ -11,6 +11,7 @@ const DashboardPage = lazy(() =>
 );
 const VivaPrepPage = lazy(() => import("../pages/VivaPrepPage").then((module) => ({ default: module.VivaPrepPage })));
 const RoadmapPage = lazy(() => import("../pages/RoadmapPage").then((module) => ({ default: module.RoadmapPage })));
+const ContentHubPage = lazy(() => import("../pages/ContentHubPage").then((module) => ({ default: module.ContentHubPage })));
 const ArticlePage = lazy(() => import("../pages/ArticlePage").then((module) => ({ default: module.ArticlePage })));
 
 export const AppRoutes = () => {
@@ -27,6 +28,10 @@ export const AppRoutes = () => {
       >
         <Routes>
           <Route path="/" element={<HomePage />} />
+          <Route path="/blog" element={<ContentHubPage />} />
+          <Route path="/roadmap" element={<ContentHubPage />} />
+          <Route path="/viva" element={<ContentHubPage />} />
+          <Route path="/interview-prep" element={<ContentHubPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/viva-prep" element={<VivaPrepPage />} />
           <Route path="/roadmap-generator" element={<RoadmapPage />} />
@@ -38,6 +43,7 @@ export const AppRoutes = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/:section/:slug" element={<ArticlePage />} />
           <Route path="/:slug" element={<ArticlePage />} />
         </Routes>
       </Suspense>
