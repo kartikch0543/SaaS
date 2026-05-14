@@ -5,14 +5,28 @@ let lastTrackedPage = "";
 
 const getMeasurementId = () => import.meta.env.VITE_GA_MEASUREMENT_ID?.trim();
 
+const canUseBrowserApis = () => typeof window !== "undefined" && typeof document !== "undefined";
+
+const getPageTitle = () => (canUseBrowserApis() ? document.title : undefined);
+
+const getPageLocation = (path) => (canUseBrowserApis() ? `${window.location.origin}${path}` : undefined);
+
 export const initGA = () => {
   const measurementId = getMeasurementId();
 
-  if (!measurementId || isGaInitialized || typeof window === "undefined") {
+  if (!measurementId || isGaInitialized || !canUseBrowserApis()) {
     return false;
   }
 
-  ReactGA.initialize(measurementId);
+  ReactGA.initialize(measurementId, {
+    gaOptions: {
+      anonymize_ip: true
+    },
+    gtagOptions: {
+      send_page_view: false
+    }
+  });
+
   isGaInitialized = true;
   return true;
 };
@@ -23,15 +37,37 @@ export const trackPageView = (path) => {
   }
 
   lastTrackedPage = path;
+  const measurementId = getMeasurementId();
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "page_view", {
+      send_to: measurementId,
+      page_path: path,
+      page_title: getPageTitle(),
+      page_location: getPageLocation(path)
+    });
+    return;
+  }
+
   ReactGA.send({
     hitType: "pageview",
     page: path,
-    title: typeof document !== "undefined" ? document.title : undefined
+    title: getPageTitle()
   });
 };
 
 export const trackEvent = (eventName, params = {}) => {
   if (!isGaInitialized || !eventName) {
+    return;
+  }
+
+  const measurementId = getMeasurementId();
+
+  if (typeof window.gtag === "function") {
+    window.gtag("event", eventName, {
+      send_to: measurementId,
+      ...params
+    });
     return;
   }
 
