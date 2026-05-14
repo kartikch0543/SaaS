@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import apiClient, { warmBackend } from "../api/client";
 import { Button } from "../components/common/Button";
 import { SeoHead } from "../components/seo/SeoHead";
+import { trackAiEvent } from "../lib/analytics";
 
 export const VivaPrepPage = () => {
   const [subject, setSubject] = useState("general");
@@ -11,11 +12,29 @@ export const VivaPrepPage = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
+      trackAiEvent("generate_viva_requested", {
+        topic,
+        subject,
+        tool: "viva_generator"
+      });
       await warmBackend();
       const response = await apiClient.post("/api/ai/viva", { subject, topic, level: "intermediate" });
       return response.data;
     },
+    onSuccess: () => {
+      trackAiEvent("generate_viva_succeeded", {
+        topic,
+        subject,
+        tool: "viva_generator"
+      });
+    },
     onError: (error) => {
+      trackAiEvent("generate_viva_failed", {
+        topic,
+        subject,
+        tool: "viva_generator",
+        error_message: error?.message || "unknown_error"
+      });
       toast.error(error?.response?.data?.message || error?.message || "Viva generation failed.");
     }
   });
@@ -93,7 +112,17 @@ export const VivaPrepPage = () => {
           <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
             The viva request did not complete. Check your backend env, OpenRouter key, and deployment logs. After this patch, the backend should fall back quickly instead of hanging for a long time.
             <div className="mt-4">
-              <Button variant="secondary" onClick={() => mutation.mutate()}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  trackAiEvent("retry_generation_clicked", {
+                    topic,
+                    subject,
+                    tool: "viva_generator"
+                  });
+                  mutation.mutate();
+                }}
+              >
                 Retry generation
               </Button>
             </div>

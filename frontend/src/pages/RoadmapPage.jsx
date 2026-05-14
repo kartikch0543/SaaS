@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import apiClient, { warmBackend } from "../api/client";
 import { SeoHead } from "../components/seo/SeoHead";
 import { Button } from "../components/common/Button";
+import { trackAiEvent } from "../lib/analytics";
 
 export const RoadmapPage = () => {
   const [goal, setGoal] = useState("frontend roadmap for beginners");
@@ -11,6 +12,10 @@ export const RoadmapPage = () => {
 
   const mutation = useMutation({
     mutationFn: async () => {
+      trackAiEvent("generate_roadmap_requested", {
+        topic: goal,
+        tool: "roadmap_generator"
+      });
       await warmBackend();
       const payload = {
         goal,
@@ -20,8 +25,19 @@ export const RoadmapPage = () => {
       const response = await apiClient.post("/api/ai/roadmap", payload);
       return response.data;
     },
-    onSuccess: () => setOpenWeek(1),
+    onSuccess: () => {
+      setOpenWeek(1);
+      trackAiEvent("generate_roadmap_succeeded", {
+        topic: goal,
+        tool: "roadmap_generator"
+      });
+    },
     onError: (error) => {
+      trackAiEvent("generate_roadmap_failed", {
+        topic: goal,
+        tool: "roadmap_generator",
+        error_message: error?.message || "unknown_error"
+      });
       toast.error(error?.response?.data?.message || error?.message || "Roadmap generation failed.");
     }
   });
@@ -70,7 +86,16 @@ export const RoadmapPage = () => {
           <div className="mt-8 rounded-3xl border border-danger/30 bg-danger/10 p-5 text-sm text-fg">
             {mutation.error?.message || "The roadmap request did not complete."}
             <div className="mt-4">
-              <Button variant="secondary" onClick={() => mutation.mutate()}>
+              <Button
+                variant="secondary"
+                onClick={() => {
+                  trackAiEvent("retry_generation_clicked", {
+                    topic: goal,
+                    tool: "roadmap_generator"
+                  });
+                  mutation.mutate();
+                }}
+              >
                 Retry generation
               </Button>
             </div>
