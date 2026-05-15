@@ -3,7 +3,7 @@ import { AuthCard } from "../components/auth/AuthCard";
 
 export const LoginPage = () => (
   <>
-    <SeoHead title="Login" description="Access your study dashboard and personalized prep workflows." path="/login" />
+    <SeoHead title="Login" description="Access your study dashboard and personalized prep workflows." path="/login" noindex />
     <section className="section-shell grid min-h-[70vh] items-center gap-8 py-16 lg:grid-cols-2">
       <div>
         <p className="text-sm font-semibold uppercase tracking-[0.2em] text-accent2">Student authentication</p>

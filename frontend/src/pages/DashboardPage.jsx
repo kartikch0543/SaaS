@@ -31,7 +31,12 @@ export const DashboardPage = () => {
 
   return (
     <>
-      <SeoHead title="Student Dashboard" description="Track study streaks, quiz performance, and content engagement." path="/dashboard" />
+      <SeoHead
+        title="Student Dashboard"
+        description="Track study streaks, quiz performance, and content engagement."
+        path="/dashboard"
+        noindex
+      />
       <section className="section-shell py-16">
         <div className="grid gap-4 md:grid-cols-4">
           <StatCard label="Current streak" value={`${dashboard?.streakDays || 0} days`} hint="Consistency builds retention." />
